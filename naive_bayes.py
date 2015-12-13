@@ -73,8 +73,7 @@ def predict_spam(phi, phi0, phi1, X_test):
 
 		label1 = label1 + math.log10(phi)
 		label0 = label0 + math.log10(1 - phi)
-		print "1 ", label1
-		print "0 ", label0
+
 		x_label.append(0 if label1 < label0 else 1)
 
 	return x_label
@@ -99,4 +98,7 @@ def test(phi, phi0, phi1, X_test, y_test):
 	
 	# TODO
 	y_label = predict_spam(phi, phi0, phi1, X_test)
-	return 0
+
+	countTrue = [1 for labelGuess, labelTest in zip(y_label, y_test) if labelGuess == labelTest]
+	
+	return len(countTrue)*1.0/len(y_test)
