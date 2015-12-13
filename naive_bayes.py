@@ -1,4 +1,5 @@
 import numpy as np
+import math
 
 def train(X, y):
 	'''
@@ -24,9 +25,7 @@ def train(X, y):
 	# TODO 
 	# Cal phi
 	phi = 0.0
-	nXRow, nXCol = X.shape
 	vecLabelMail = y[:, 0]
-	arrSpam = 0
 	arrSpam = [1 for x in vecLabelMail if x == 1]
 	phi = len(arrSpam)*1.0/len(vecLabelMail)
 
@@ -36,15 +35,15 @@ def train(X, y):
 	for vecMaili in X.T:
 		arrNumeratorPhi0 = [1]
 		arrNumeratorPhi1 = [1]
-		
-		arrNumeratorPhi0 = arrNumeratorPhi0 + [1 for m, l in zip(vecMaili, vecLabelMail) if m == 1 and l == 0]
-		arrNumeratorPhi1 = arrNumeratorPhi1 + [1 for m, l in zip(vecMaili, vecLabelMail) if m == 1 and l == 1]
 
-		denominatorPhi0 = 2 + (1 - phi)
-		denominatorPhi1 = 2 + (phi)
+		arrNumeratorPhi0 = [1 for m, l in zip(vecMaili, vecLabelMail) if m == 1 and l == 0]
+		arrNumeratorPhi1 = [1 for m, l in zip(vecMaili, vecLabelMail) if m == 1 and l == 1]
 
-		phi0.append((len(arrNumeratorPhi0)/denominatorPhi0))
-		phi1.append((len(arrNumeratorPhi1)/denominatorPhi1))
+		denominatorPhi0 = 2.0 + len(vecLabelMail) - len(arrSpam)
+		denominatorPhi1 = 2.0 + len(arrSpam)
+
+		phi0.append(((len(arrNumeratorPhi0) + 1)/(denominatorPhi0)))
+		phi1.append(((len(arrNumeratorPhi1) + 1)/(denominatorPhi1)))
 
 	return (phi, phi0, phi1)
 
@@ -64,7 +63,21 @@ def predict_spam(phi, phi0, phi1, X_test):
 	'''
 	
 	# TODO
-	return np.zeros(X_test.shape[0])
+	x_label = []
+	for vecVocaOfMail in X_test[:,]:
+		label1 = 0.0
+		label0 = 0.0
+		for m, p1, p0 in zip(vecVocaOfMail, phi1, phi0):
+			label1 = label1 + math.log10(m*p1 + (1-m)*(1-p1))
+			label0 = label0 + math.log10(m*p0 + (1-m)*(1-p0))
+
+		label1 = label1 + math.log10(phi)
+		label0 = label0 + math.log10(1 - phi)
+		print "1 ", label1
+		print "0 ", label0
+		x_label.append(0 if label1 < label0 else 1)
+
+	return x_label
 
 def test(phi, phi0, phi1, X_test, y_test):
 	'''
@@ -85,4 +98,5 @@ def test(phi, phi0, phi1, X_test, y_test):
 	'''
 	
 	# TODO
+	y_label = predict_spam(phi, phi0, phi1, X_test)
 	return 0
